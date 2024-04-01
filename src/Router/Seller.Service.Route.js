@@ -1,0 +1,25 @@
+"use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.sellerServiceRoute = void 0;
+const express_1 = __importDefault(require("express"));
+const sellerServiceRoute = express_1.default.Router();
+exports.sellerServiceRoute = sellerServiceRoute;
+const Seller_Service_1 = require("../Controller/Seller.Service");
+const UserTokevalidation_1 = __importDefault(require("../middleware/UserTokevalidation"));
+sellerServiceRoute.post('/add-category', Seller_Service_1.AddCategory);
+sellerServiceRoute.post('/addproduct', UserTokevalidation_1.default, Seller_Service_1.AddPrduct);
+sellerServiceRoute.get('/get-category-list', Seller_Service_1.GetCategoryList);
+sellerServiceRoute.post('/addproductImage', Seller_Service_1.AddProductImage);
+sellerServiceRoute.patch('/update-category', Seller_Service_1.updatecategory);
+sellerServiceRoute.put('/update-product', Seller_Service_1.UpdateProduct);
+sellerServiceRoute.delete('/delete-category', Seller_Service_1.deleteCategory);
+sellerServiceRoute.delete('/delete-product', Seller_Service_1.deleteProduct);
+sellerServiceRoute.get('/get-product-list', Seller_Service_1.GetAllproducts);
+sellerServiceRoute.patch('/order-status', Seller_Service_1.orderConfirmation);
+sellerServiceRoute.get('/filter', Seller_Service_1.filter);
+sellerServiceRoute.patch('/decline-order-status', Seller_Service_1.declineorderConfirmation);
+sellerServiceRoute.get('/decline-order-status', Seller_Service_1.declineorderConfirmation);
+sellerServiceRoute.get('/Order-list', Seller_Service_1.GetOrdersByStatus);
