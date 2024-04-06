@@ -53,7 +53,7 @@ npm run dev
 http://localhost:5001
 ```
 
-### NOTE : If you stuck then contact me on LinkedIn (https://www.linkedin.com/in/anshul-jha-069002259/)
+### NOTE : If you stuck then contact me on [LinkedIn](https://www.linkedin.com/in/anshul-jha-069002259/)
 
 ## Request
 - If You find any bug then please create issue i love to solve that
