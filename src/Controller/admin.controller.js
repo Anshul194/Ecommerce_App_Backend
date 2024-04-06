@@ -22,7 +22,7 @@ const SuccesResponse_1 = __importDefault(require("../SuccesResponse"));
 const prisma = new client_1.PrismaClient();
 // Register a user
 const Register = (0, express_async_handler_1.default)((req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-    console.log(req.body);
+    console.log("body data ", req.body);
     const { error, value } = admin_Validation_1.adminRegistrationSchema.validate(req.body);
     console.log(value);
     if (error) {
@@ -44,17 +44,19 @@ const Register = (0, express_async_handler_1.default)((req, res, next) => __awai
             data: {
                 UserName,
                 email,
-                password: hashedpassword
-            }
+                password: hashedpassword,
+            },
         });
         if (newAdmin) {
-            res.status(200).json({ message: "Admin registered Successfully" });
+            SuccesResponse_1.default.sendSuccessResponse(res, "Admin registered Successfully");
             return;
         }
     }
     catch (error) {
         console.error(error);
-        res.status(500).json({ message: "Internal Server error", error: error.message });
+        res
+            .status(500)
+            .json({ message: "Internal Server error", error: error.message });
         return;
     }
     finally {
@@ -70,7 +72,7 @@ const Login = (req, res, next) => __awaiter(void 0, void 0, void 0, function* ()
             return;
         }
         const admin = yield prisma.admin.findUnique({
-            where: { email }
+            where: { email },
         });
         if (!admin) {
             res.status(404).json({ message: "Invalid email or password" });
@@ -85,14 +87,18 @@ const Login = (req, res, next) => __awaiter(void 0, void 0, void 0, function* ()
             admin: {
                 id: admin.id,
                 email: admin.email,
-                isAdminToken: true
-            }
-        }, process.env.Access_Token_Secret || '', { expiresIn: "30m" });
-        SuccesResponse_1.default.sendSuccessResponse(res, "Login successful", { accessToken });
+                isAdminToken: true,
+            },
+        }, process.env.Access_Token_Secret || "", { expiresIn: "30m" });
+        SuccesResponse_1.default.sendSuccessResponse(res, "Login successful", {
+            accessToken,
+        });
     }
     catch (error) {
         console.error(error);
-        res.status(500).json({ message: "Internal Server error", error: error.message });
+        res
+            .status(500)
+            .json({ message: "Internal Server error", error: error.message });
     }
 });
 exports.Login = Login;

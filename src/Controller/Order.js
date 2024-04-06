@@ -16,57 +16,66 @@ exports.CancelOrder = exports.GetAllOrders = exports.order = void 0;
 const express_async_handler_1 = __importDefault(require("express-async-handler"));
 const client_1 = require("@prisma/client");
 const Order_Status_email_1 = require("../EmailSender/Order.Status.email");
+const SuccesResponse_1 = __importDefault(require("../SuccesResponse"));
 const prisma = new client_1.PrismaClient();
+// make ur order
 const order = (0, express_async_handler_1.default)((req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const userId = req.user.user.id;
         const orderItems = req.body.orderItems;
         if (!orderItems || orderItems.length === 0) {
-            res.status(400).json({ error: 'Invalid order items.' });
+            res.status(400).json({ error: "Invalid order items." });
             return;
         }
         const orders = [];
         for (const item of orderItems) {
             const { productId, quantity } = item;
             if (!productId || !quantity || quantity <= 0) {
-                res.status(400).json({ error: 'Invalid product ID or quantity.' });
+                res.status(400).json({ error: "Invalid product ID or quantity." });
                 return;
             }
             const product = yield prisma.product.findUnique({
-                where: { id: productId }
+                where: { id: productId },
             });
             if (!product) {
-                res.status(404).json({ error: `Product with ID ${productId} not found.` });
+                res
+                    .status(404)
+                    .json({ error: `Product with ID ${productId} not found.` });
                 return;
             }
             if (product.quantity < quantity) {
-                res.status(400).json({ error: `Insufficient quantity available for product with ID ${productId}.` });
+                res
+                    .status(400)
+                    .json({
+                    error: `Insufficient quantity available for product with ID ${productId}.`,
+                });
                 return;
             }
             const newOrder = yield prisma.order.create({
                 data: {
                     userId: userId,
                     productId: productId,
-                    quantity: quantity
-                }
+                    quantity: quantity,
+                },
             });
             orders.push(newOrder);
             const ownerId = product.userId;
             const userData = yield prisma.user.findUnique({
-                where: { id: ownerId }
+                where: { id: ownerId },
             });
             if (userData) {
                 const sellerEmail = userData.email;
                 yield (0, Order_Status_email_1.SendOrderConfirmationEmail)(sellerEmail, userId);
             }
         }
-        res.status(201).json({ message: 'Orders placed but pendinf for approval.', orders });
+        SuccesResponse_1.default.sendSuccessResponse(res, "Orders placed but pending for approval", { orders });
     }
     catch (error) {
         next(error);
     }
 }));
 exports.order = order;
+// get all orders
 const GetAllOrders = (0, express_async_handler_1.default)((req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     const userId = req.user.user.id;
     const page = parseInt(req.query.page) || 1;
@@ -77,19 +86,24 @@ const GetAllOrders = (0, express_async_handler_1.default)((req, res, next) => __
         const skip = (page - 1) * limit;
         const getAll = yield prisma.order.findMany({
             where: {
-                userId: userId
+                userId: userId,
             },
             include: {
                 product: true,
             },
             skip: skip,
-            take: limit
+            take: limit,
         });
-        res.status(200).json({ message: "List of Orders are :", getAll, page: page,
-            totalPages: totalPages });
+        SuccesResponse_1.default.sendSuccessResponse(res, "List of Orders are :", {
+            getAll,
+            page: page,
+            totalPages: totalPages,
+        });
     }
     catch (error) {
-        res.status(500).json({ message: "Internal Server Error", error: error.message });
+        res
+            .status(500)
+            .json({ message: "Internal Server Error", error: error.message });
     }
 }));
 exports.GetAllOrders = GetAllOrders;
@@ -100,12 +114,14 @@ const CancelOrder = (0, express_async_handler_1.default)((req, res, next) => __a
         const getAll = yield prisma.order.delete({
             where: {
                 id: orderId,
-            }
+            },
         });
-        res.status(200).json({ message: "List of Orders are :", getAll });
+        SuccesResponse_1.default.sendSuccessResponse(res, "List of Orders are after cacelling order:", { getAll });
     }
     catch (error) {
-        res.status(500).json({ message: "Internal Server Error", error: error.message });
+        res
+            .status(500)
+            .json({ message: "Internal Server Error", error: error.message });
     }
 }));
 exports.CancelOrder = CancelOrder;

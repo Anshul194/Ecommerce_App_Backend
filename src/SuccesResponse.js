@@ -4,7 +4,7 @@ class SuccessHandler {
     static sendSuccessResponse(res, message, data) {
         let responseData = {
             success: true,
-            message: message
+            message: message,
         };
         if (data !== undefined) {
             responseData.data = data;

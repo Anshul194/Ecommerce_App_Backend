@@ -17,25 +17,26 @@ const nodemailer_1 = __importDefault(require("nodemailer"));
 const transporter = nodemailer_1.default.createTransport({
     service: "gmail",
     auth: {
-        user: 'mailer1499@gmail.com',
-        pass: 'aivd qmxd hhmf xdjv'
-    }
+        user: "mailer1499@gmail.com",
+        pass: "aivd qmxd hhmf xdjv",
+    },
 });
-exports.SendOrderConfirmationEmail = ((sellerEmail, UserId) => __awaiter(void 0, void 0, void 0, function* () {
+const SendOrderConfirmationEmail = (sellerEmail, UserId) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         yield transporter.sendMail({
             from: '"Ecommerce-App" <mailer1499@gmail.com>',
             to: sellerEmail,
-            subject: 'Order Approval Request',
+            subject: "Order Approval Request",
             text: `Orderr placed from ${UserId} , please go on further process`,
         });
         console.log(`Notification email sent to ${sellerEmail} for approval`);
     }
     catch (error) {
-        console.error('Error sending email notification:', error);
+        console.error("Error sending email notification:", error);
     }
-}));
-exports.orderStatusMail = ((userEmail, subject, task) => __awaiter(void 0, void 0, void 0, function* () {
+});
+exports.SendOrderConfirmationEmail = SendOrderConfirmationEmail;
+const orderStatusMail = (userEmail, subject, task) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         yield transporter.sendMail({
             from: '"Ecommerce-App" <mailer1499@gmail.com>',
@@ -46,6 +47,7 @@ exports.orderStatusMail = ((userEmail, subject, task) => __awaiter(void 0, void 
         console.log(`Notification email sent to ${userEmail}, Your order has been confirmed`);
     }
     catch (error) {
-        console.error('Error sending email notification:', error);
+        console.error("Error sending email notification:", error);
     }
-}));
+});
+exports.orderStatusMail = orderStatusMail;

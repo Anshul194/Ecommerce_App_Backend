@@ -11,7 +11,9 @@ const userSchema = joi_1.default.object({
     lastName: joi_1.default.string().required(),
     email: joi_1.default.string().required(),
     password: joi_1.default.string().required(),
-    mobile: joi_1.default.string().pattern(/^[0-9]{10}$/).required(),
-    city: joi_1.default.string()
+    mobile: joi_1.default.string()
+        .pattern(/^[0-9]{10}$/)
+        .required(),
+    city: joi_1.default.string(),
 });
 exports.userSchema = userSchema;

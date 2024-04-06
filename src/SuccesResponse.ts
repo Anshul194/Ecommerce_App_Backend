@@ -1,10 +1,14 @@
-import { Response } from 'express';
+import { Response } from "express";
 
 class SuccessHandler {
-  static sendSuccessResponse(res: Response, message: string, data?: any): Response {
-    let responseData: { success: boolean, message: string, data?: any } = {
+  static sendSuccessResponse(
+    res: Response,
+    message: string,
+    data?: any
+  ): Response {
+    let responseData: { success: boolean; message: string; data?: any } = {
       success: true,
-      message: message
+      message: message,
     };
     if (data !== undefined) {
       responseData.data = data;

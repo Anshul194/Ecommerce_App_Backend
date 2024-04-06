@@ -17,6 +17,7 @@ const client_1 = require("@prisma/client");
 const prisma = new client_1.PrismaClient();
 const express_async_handler_1 = __importDefault(require("express-async-handler"));
 const AdminApproval_1 = require("../EmailSender/AdminApproval");
+const SuccesResponse_1 = __importDefault(require("../SuccesResponse"));
 // approve user
 const approveRequest = (0, express_async_handler_1.default)((req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
@@ -27,21 +28,23 @@ const approveRequest = (0, express_async_handler_1.default)((req, res, next) => 
         }
         const approveuser = yield prisma.user.update({
             where: { id: UserId },
-            data: { isadminapproved: true }
+            data: { isadminapproved: true },
         });
         const user = yield prisma.user.findUnique({
             where: { id: UserId },
             select: { email: true },
         });
         if (!user || !user.email) {
-            throw new Error('User email not found');
+            throw new Error("User email not found");
         }
-        yield (0, AdminApproval_1.sendRegistrationResponseNotification)(user.email, 'Registration Approved', 'Your registration has been approved by the admin, please login ur account.');
-        res.status(200).json({ message: 'User approved successfully' });
+        yield (0, AdminApproval_1.sendRegistrationResponseNotification)(user.email, "Registration Approved", "Your registration has been approved by the admin, please login ur account.");
+        SuccesResponse_1.default.sendSuccessResponse(res, "User approved successfully");
     }
     catch (error) {
-        console.error('Error approving user:', error);
-        res.status(500).json({ message: "Internal Server error", error: error.message });
+        console.error("Error approving user:", error);
+        res
+            .status(500)
+            .json({ message: "Internal Server error", error: error.message });
     }
 }));
 exports.approveRequest = approveRequest;
@@ -55,14 +58,16 @@ const declineUser = (0, express_async_handler_1.default)((req, res, next) => __a
             select: { email: true },
         });
         if (!user || !user.email) {
-            throw new Error('User email not found');
+            throw new Error("User email not found");
         }
-        yield (0, AdminApproval_1.sendRegistrationResponseNotification)(user.email, 'Registration Declined', 'Your registration has been declined.');
-        res.status(400).json({ message: 'User registration declined by admin' });
+        yield (0, AdminApproval_1.sendRegistrationResponseNotification)(user.email, "Registration Declined", "Your registration has been declined.");
+        SuccesResponse_1.default.sendSuccessResponse(res, "User registration declined by admin");
     }
     catch (error) {
-        console.error('Error declining user:', error);
-        res.status(500).json({ message: 'Internal Server error', error: error.message });
+        console.error("Error declining user:", error);
+        res
+            .status(500)
+            .json({ message: "Internal Server error", error: error.message });
     }
 }));
 exports.declineUser = declineUser;
@@ -73,30 +78,35 @@ const UserListForApproval = (0, express_async_handler_1.default)((req, res, next
     try {
         const count = yield prisma.user.count({
             where: {
-                isadminapproved: false
-            }
+                isadminapproved: false,
+            },
         });
         const totalPages = Math.ceil(count / limit);
         const skip = (page - 1) * limit;
         const list = yield prisma.user.findMany({
             where: {
-                isadminapproved: false
+                isadminapproved: false,
             },
             skip: skip,
-            take: limit
+            take: limit,
         });
         if (!list) {
             res.status(400).json({ message: "No request is pending for approval" });
         }
-        res.status(200).json({ message: "Users pending to approve :", list, page: page,
-            totalPages: totalPages, });
+        SuccesResponse_1.default.sendSuccessResponse(res, "Users pending to approve :", {
+            list,
+            page: page,
+            totalPages: totalPages,
+        });
     }
     catch (error) {
-        res.status(500).json({ message: 'Internal Server error', error: error.message });
+        res
+            .status(500)
+            .json({ message: "Internal Server error", error: error.message });
     }
 }));
 exports.UserListForApproval = UserListForApproval;
-/// users list 
+/// users list
 const UserList = (0, express_async_handler_1.default)((req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 1;
@@ -106,16 +116,21 @@ const UserList = (0, express_async_handler_1.default)((req, res, next) => __awai
         const skip = (page - 1) * limit;
         const list = yield prisma.user.findMany({
             skip: skip,
-            take: limit
+            take: limit,
         });
         if (!list) {
             res.status(400).json({ message: "No User available" });
         }
-        res.status(200).json({ message: "Users List :", list, page: page,
-            totalPages: totalPages, });
+        SuccesResponse_1.default.sendSuccessResponse(res, "Users List :", {
+            list,
+            page: page,
+            totalPages: totalPages,
+        });
     }
     catch (error) {
-        res.status(500).json({ message: 'Internal Server error', error: error.message });
+        res
+            .status(500)
+            .json({ message: "Internal Server error", error: error.message });
     }
 }));
 exports.UserList = UserList;

@@ -1,7 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.productSchema = void 0;
-const Joi = require('joi');
+const Joi = require("joi");
 const productSchema = Joi.object({
     name: Joi.string(),
     description: Joi.string(),
@@ -10,6 +10,6 @@ const productSchema = Joi.object({
     categoryId: Joi.string().required(),
     userId: Joi.string(),
     imageURL: Joi.string(),
-    brand: Joi.string()
+    brand: Joi.string(),
 });
 exports.productSchema = productSchema;

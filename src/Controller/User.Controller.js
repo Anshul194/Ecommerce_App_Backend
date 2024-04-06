@@ -19,6 +19,7 @@ const client_1 = require("@prisma/client");
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 const AdminApproval_1 = require("../EmailSender/AdminApproval");
 const User_Validation_1 = require("../validations/User.Validation");
+const SuccesResponse_1 = __importDefault(require("../SuccesResponse"));
 const prisma = new client_1.PrismaClient();
 // Register a user
 const Register = (0, express_async_handler_1.default)((req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
@@ -50,11 +51,13 @@ const Register = (0, express_async_handler_1.default)((req, res, next) => __awai
             },
         });
         yield (0, AdminApproval_1.sendUserNotification)(newUser.id, newUser.email);
-        res.status(200).json({ message: 'User registration pending approval from admin' });
+        SuccesResponse_1.default.sendSuccessResponse(res, "User registration pending approval from admin");
     }
     catch (error) {
-        console.error('Error registering user:', error);
-        res.status(500).json({ message: 'Internal Server error', error: error.message });
+        console.error("Error registering user:", error);
+        res
+            .status(500)
+            .json({ message: "Internal Server error", error: error.message });
     }
 }));
 exports.Register = Register;
@@ -66,14 +69,16 @@ const Login = (req, res, next) => __awaiter(void 0, void 0, void 0, function* ()
             return;
         }
         const user = yield prisma.user.findUnique({
-            where: { email }
+            where: { email },
         });
         if (!user) {
             res.status(404).json({ message: "Invalid email or password" });
             return;
         }
         if (!user.isadminapproved) {
-            return res.status(401).json({ message: 'User is not approved or not found' });
+            return res
+                .status(401)
+                .json({ message: "User is not approved or not found" });
         }
         const passwordMatch = yield bcrypt_1.default.compare(password, user.password);
         if (!passwordMatch) {
@@ -84,14 +89,18 @@ const Login = (req, res, next) => __awaiter(void 0, void 0, void 0, function* ()
             user: {
                 id: user.id,
                 email: user.email,
-                isUserToken: true
-            }
-        }, process.env.Access_Token_Secret || '', { expiresIn: "30m" });
-        res.json({ message: "Login successful", accessToken });
+                isUserToken: true,
+            },
+        }, process.env.Access_Token_Secret || "", { expiresIn: "30m" });
+        SuccesResponse_1.default.sendSuccessResponse(res, "Login successful", {
+            accessToken,
+        });
     }
     catch (error) {
         console.error(error);
-        res.status(500).json({ message: "Internal Server error", error: error.message });
+        res
+            .status(500)
+            .json({ message: "Internal Server error", error: error.message });
     }
 });
 exports.Login = Login;

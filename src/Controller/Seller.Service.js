@@ -18,25 +18,28 @@ const client_1 = require("@prisma/client");
 const cloudinary_1 = require("cloudinary");
 const Product_validation_1 = require("../validations/Product.validation");
 const Order_Status_email_1 = require("../EmailSender/Order.Status.email");
+const SuccesResponse_1 = __importDefault(require("../SuccesResponse"));
 const prisma = new client_1.PrismaClient();
 cloudinary_1.v2.config({
     cloud_name: process.env.cloud_name,
     api_key: process.env.api_key,
-    api_secret: process.env.api_secret
+    api_secret: process.env.api_secret,
 });
 const AddCategory = (0, express_async_handler_1.default)((req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { name } = req.body;
         const category = yield prisma.category.create({
             data: {
-                name
-            }
+                name,
+            },
         });
-        res.status(201).json(category);
+        SuccesResponse_1.default.sendSuccessResponse(res, " Category Added Successfully", {
+            category,
+        });
     }
     catch (error) {
-        console.error('Error adding category:', error);
-        res.status(500).json({ error: 'Internal Server Error' });
+        console.error("Error adding category:", error);
+        res.status(500).json({ error: "Internal Server Error" });
     }
 }));
 exports.AddCategory = AddCategory;
@@ -47,13 +50,17 @@ const GetCategoryList = (0, express_async_handler_1.default)((req, res, next) =>
         const count = yield prisma.category.count();
         const totalPages = Math.ceil(count / limit);
         const skip = (page - 1) * limit;
-        const list = yield prisma.category.findMany({ skip: skip,
-            take: limit
+        const list = yield prisma.category.findMany({ skip: skip, take: limit });
+        SuccesResponse_1.default.sendSuccessResponse(res, "List of category is :", {
+            list,
+            page: page,
+            totalPages: totalPages,
         });
-        res.status(201).json({ message: "List of category is :", list, page: page, totalPages: totalPages });
     }
     catch (error) {
-        res.status(500).json({ message: "Internal Server error", error: error.message });
+        res
+            .status(500)
+            .json({ message: "Internal Server error", error: error.message });
     }
 }));
 exports.GetCategoryList = GetCategoryList;
@@ -66,12 +73,16 @@ const updatecategory = (0, express_async_handler_1.default)((req, res, next) => 
         }
         const update = yield prisma.category.update({
             where: { id: categoryId },
-            data: { name: categoryName }
+            data: { name: categoryName },
         });
-        res.status(200).json({ message: 'Updated successfully', update });
+        SuccesResponse_1.default.sendSuccessResponse(res, "Updated successfully", {
+            update,
+        });
     }
     catch (error) {
-        res.status(500).json({ message: "Internal Server error", error: error.message });
+        res
+            .status(500)
+            .json({ message: "Internal Server error", error: error.message });
     }
 }));
 exports.updatecategory = updatecategory;
@@ -83,20 +94,26 @@ const deleteCategory = (0, express_async_handler_1.default)((req, res, next) => 
         }
         const productsWithCategory = yield prisma.product.findMany({
             where: {
-                categoryId: categoryId
-            }
+                categoryId: categoryId,
+            },
         });
         if (productsWithCategory.length > 0) {
-            res.status(400).json({ message: "Cannot delete category with associated products" });
+            res
+                .status(400)
+                .json({ message: "Cannot delete category with associated products" });
         }
         const deletedCategory = yield prisma.category.delete({
-            where: { id: categoryId }
+            where: { id: categoryId },
         });
-        res.status(200).json({ message: 'Category deleted successfully', deletedCategory });
+        SuccesResponse_1.default.sendSuccessResponse(res, "Category deleted successfully", {
+            deletedCategory,
+        });
     }
     catch (error) {
-        console.error('Error deleting category:', error);
-        res.status(500).json({ message: "Internal Server error", error: error.message });
+        console.error("Error deleting category:", error);
+        res
+            .status(500)
+            .json({ message: "Internal Server error", error: error.message });
     }
 }));
 exports.deleteCategory = deleteCategory;
@@ -110,8 +127,8 @@ const AddPrduct = (0, express_async_handler_1.default)((req, res, next) => __awa
         const { name, description, price, categoryId, quantity, brand } = value;
         const category = yield prisma.category.findUnique({
             where: {
-                id: categoryId
-            }
+                id: categoryId,
+            },
         });
         if (!category) {
             res.status(400).json({ message: "Category not found" });
@@ -124,14 +141,18 @@ const AddPrduct = (0, express_async_handler_1.default)((req, res, next) => __awa
                 categoryId,
                 quantity,
                 userId: user,
-                brand
+                brand,
             },
         });
-        res.status(200).json({ message: 'Product Added Successfully', newProduct });
+        SuccesResponse_1.default.sendSuccessResponse(res, "Product Added Successfully", {
+            newProduct,
+        });
     }
     catch (error) {
-        console.error('Error adding product:', error);
-        res.status(500).json({ message: "Internal Server error", error: error.message });
+        console.error("Error adding product:", error);
+        res
+            .status(500)
+            .json({ message: "Internal Server error", error: error.message });
     }
 }));
 exports.AddPrduct = AddPrduct;
@@ -147,8 +168,8 @@ const UpdateProduct = (0, express_async_handler_1.default)((req, res, next) => _
         const { name, description, price, categoryId, quantity, brand } = value;
         const existingProduct = yield prisma.product.findUnique({
             where: {
-                id: productId
-            }
+                id: productId,
+            },
         });
         if (!existingProduct) {
             res.status(404).json({ message: "Product not found" });
@@ -156,8 +177,8 @@ const UpdateProduct = (0, express_async_handler_1.default)((req, res, next) => _
         if (categoryId) {
             const category = yield prisma.category.findUnique({
                 where: {
-                    id: categoryId
-                }
+                    id: categoryId,
+                },
             });
             if (!category) {
                 res.status(400).json({ message: "Category not found" });
@@ -171,14 +192,18 @@ const UpdateProduct = (0, express_async_handler_1.default)((req, res, next) => _
                 price,
                 categoryId,
                 quantity,
-                brand
-            }
+                brand,
+            },
         });
-        res.status(200).json({ message: 'Product updated successfully', updatedProduct });
+        SuccesResponse_1.default.sendSuccessResponse(res, "Product updated successfully", {
+            updatedProduct,
+        });
     }
     catch (error) {
-        console.error('Error updating product:', error);
-        res.status(500).json({ message: "Internal Server error", error: error.message });
+        console.error("Error updating product:", error);
+        res
+            .status(500)
+            .json({ message: "Internal Server error", error: error.message });
     }
 }));
 exports.UpdateProduct = UpdateProduct;
@@ -190,20 +215,26 @@ const deleteProduct = (0, express_async_handler_1.default)((req, res, next) => _
         }
         const existingproductImages = yield prisma.image.findMany({
             where: {
-                productId: productId
-            }
+                productId: productId,
+            },
         });
         if (existingproductImages.length > 0) {
-            res.status(400).json({ message: "Cannot delete product , delete images first" });
+            res
+                .status(400)
+                .json({ message: "Cannot delete product , delete images first" });
         }
         const deletedproduct = yield prisma.product.delete({
-            where: { id: productId }
+            where: { id: productId },
         });
-        res.status(200).json({ message: 'product deleted successfully', deleteProduct });
+        SuccesResponse_1.default.sendSuccessResponse(res, "product deleted successfully", {
+            deleteProduct,
+        });
     }
     catch (error) {
-        console.error('Error deleting product:', error);
-        res.status(500).json({ message: "Internal Server error", error: error.message });
+        console.error("Error deleting product:", error);
+        res
+            .status(500)
+            .json({ message: "Internal Server error", error: error.message });
     }
 }));
 exports.deleteProduct = deleteProduct;
@@ -231,8 +262,8 @@ const AddProductImage = (0, express_async_handler_1.default)((req, res, next) =>
                             const savedProductImage = yield prisma.image.create({
                                 data: {
                                     productId: productId,
-                                    url: result.secure_url
-                                }
+                                    url: result.secure_url,
+                                },
                             });
                             resolve(result);
                         }
@@ -245,11 +276,13 @@ const AddProductImage = (0, express_async_handler_1.default)((req, res, next) =>
             }));
         });
         yield Promise.all(uploadPromises);
-        res.json({ message: "Product image's inserted successfully" });
+        SuccesResponse_1.default.sendSuccessResponse(res, "Product image's inserted successfully");
     }
     catch (error) {
-        console.error('Error adding product image:', error);
-        res.status(500).json({ message: "Internal Server Error", error: error.message });
+        console.error("Error adding product image:", error);
+        res
+            .status(500)
+            .json({ message: "Internal Server Error", error: error.message });
     }
 }));
 exports.AddProductImage = AddProductImage;
@@ -263,16 +296,21 @@ const GetAllproducts = (0, express_async_handler_1.default)((req, res, next) => 
         const getAll = yield prisma.product.findMany({
             include: {
                 images: true,
-                category: true
+                category: true,
             },
             skip: skip,
-            take: limit
+            take: limit,
         });
-        res.status(200).json({ message: "List of products are :", getAll, page: page,
-            totalPages: totalPages });
+        SuccesResponse_1.default.sendSuccessResponse(res, "List of products are :", {
+            getAll,
+            page: page,
+            totalPages: totalPages,
+        });
     }
     catch (error) {
-        res.status(500).json({ message: "Internal Server Error", error: error.message });
+        res
+            .status(500)
+            .json({ message: "Internal Server Error", error: error.message });
     }
 }));
 exports.GetAllproducts = GetAllproducts;
@@ -284,75 +322,83 @@ const filter = (0, express_async_handler_1.default)((req, res, next) => __awaite
     try {
         let filterOptions = {};
         if (productId && Category) {
-            filterOptions['AND'] = [
+            filterOptions["AND"] = [
                 { id: productId },
-                { categoryId: Category }
+                { categoryId: Category },
             ];
         }
         else {
             if (productId) {
-                filterOptions['id'] = productId;
+                filterOptions["id"] = productId;
             }
             if (Category) {
-                filterOptions['categoryId'] = Category;
+                filterOptions["categoryId"] = Category;
             }
         }
         if (MinPrice !== undefined && MaxPrice !== undefined) {
-            filterOptions['price'] = {
+            filterOptions["price"] = {
                 gte: MinPrice,
-                lte: MaxPrice
+                lte: MaxPrice,
             };
         }
         else {
             if (MinPrice !== undefined) {
-                filterOptions['price'] = {
-                    gte: MinPrice
+                filterOptions["price"] = {
+                    gte: MinPrice,
                 };
             }
             if (MaxPrice !== undefined) {
-                filterOptions['price'] = {
-                    lte: MaxPrice
+                filterOptions["price"] = {
+                    lte: MaxPrice,
                 };
             }
         }
         const filteredProducts = yield prisma.product.findMany({
-            where: filterOptions
+            where: filterOptions,
         });
-        res.json(filteredProducts);
+        SuccesResponse_1.default.sendSuccessResponse(res, "filtered data", {
+            filteredProducts,
+        });
     }
     catch (error) {
-        console.error('Error filtering products:', error);
-        res.status(500).json({ message: "Internal Server error", error: error.message });
+        console.error("Error filtering products:", error);
+        res
+            .status(500)
+            .json({ message: "Internal Server error", error: error.message });
     }
 }));
 exports.filter = filter;
-// Get list of pending Order 
+// Get list of pending Order
 const GetOrdersByStatus = (0, express_async_handler_1.default)((req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 2;
     try {
         const statusParam = req.query.status;
-        if (statusParam !== 'pending' && statusParam !== 'confirmed' && statusParam !== 'rejected') {
+        if (statusParam !== "pending" &&
+            statusParam !== "confirmed" &&
+            statusParam !== "rejected") {
             res.status(404).json({ message: "Invalid Order Status" });
         }
         const count = yield prisma.order.count({
             where: {
-                status: statusParam
-            }
+                status: statusParam,
+            },
         });
         const totalPages = Math.ceil(count / limit);
         const skip = (page - 1) * limit;
         const orders = yield prisma.order.findMany({
             where: {
-                status: statusParam
+                status: statusParam,
             },
             skip: skip,
-            take: limit
+            take: limit,
         });
-        res.status(200).json({ message: 'Orders fetched successfully', orders, totalPages: totalPages, page: page });
+        SuccesResponse_1.default.sendSuccessResponse(res, " 'Orders fetched successfully'", { orders, totalPages: totalPages, page: page });
     }
     catch (error) {
-        res.status(500).json({ message: "Internal Server error", error: error.message });
+        res
+            .status(500)
+            .json({ message: "Internal Server error", error: error.message });
     }
 }));
 exports.GetOrdersByStatus = GetOrdersByStatus;
@@ -367,25 +413,27 @@ const orderConfirmation = (0, express_async_handler_1.default)((req, res, next) 
         }
         const approvedOrder = yield prisma.order.update({
             where: { id: orderId },
-            data: { status: "confirmed" }
+            data: { status: "confirmed" },
         });
         const order = yield prisma.order.findUnique({
             where: { id: orderId },
-            include: { User: true }
+            include: { User: true },
         });
         if (!order || !order.User || !order.User.email) {
-            throw new Error('User email not found');
+            throw new Error("User email not found");
         }
-        yield (0, Order_Status_email_1.orderStatusMail)(order.User.email, 'Order Confirmed', 'Your order has been confirmed.');
-        res.status(200).json({ message: 'Order : approved' });
+        yield (0, Order_Status_email_1.orderStatusMail)(order.User.email, "Order Confirmed", "Your order has been confirmed.");
+        SuccesResponse_1.default.sendSuccessResponse(res, "Order : approved");
     }
     catch (error) {
-        console.error('Error approving order:', error);
-        res.status(500).json({ message: "Internal Server error", error: error.message });
+        console.error("Error approving order:", error);
+        res
+            .status(500)
+            .json({ message: "Internal Server error", error: error.message });
     }
 }));
 exports.orderConfirmation = orderConfirmation;
-// decline order 
+// decline order
 const declineorderConfirmation = (0, express_async_handler_1.default)((req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const orderId = req.query.orderId;
@@ -396,21 +444,23 @@ const declineorderConfirmation = (0, express_async_handler_1.default)((req, res,
         }
         const approvedOrder = yield prisma.order.update({
             where: { id: orderId },
-            data: { status: "rejected" }
+            data: { status: "rejected" },
         });
         const order = yield prisma.order.findUnique({
             where: { id: orderId },
-            include: { User: true }
+            include: { User: true },
         });
         if (!order || !order.User || !order.User.email) {
-            throw new Error('User email not found');
+            throw new Error("User email not found");
         }
-        yield (0, Order_Status_email_1.orderStatusMail)(order.User.email, 'Order rejected', 'Your order has been rejected.');
-        res.status(200).json({ message: 'Order : Rejected' });
+        yield (0, Order_Status_email_1.orderStatusMail)(order.User.email, "Order rejected", "Your order has been rejected.");
+        SuccesResponse_1.default.sendSuccessResponse(res, "Order : Rejected");
     }
     catch (error) {
-        console.error('Error approving order:', error);
-        res.status(500).json({ message: "Internal Server error", error: error.message });
+        console.error("Error approving order:", error);
+        res
+            .status(500)
+            .json({ message: "Internal Server error", error: error.message });
     }
 }));
 exports.declineorderConfirmation = declineorderConfirmation;

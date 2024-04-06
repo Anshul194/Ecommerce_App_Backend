@@ -17,29 +17,29 @@ const nodemailer_1 = __importDefault(require("nodemailer"));
 const client_1 = require("@prisma/client");
 const prisma = new client_1.PrismaClient();
 const transporter = nodemailer_1.default.createTransport({
-    service: 'gmail',
+    service: "gmail",
     auth: {
-        user: 'mailer1499@gmail.com',
-        pass: 'aivd qmxd hhmf xdjv'
-    }
+        user: "mailer1499@gmail.com",
+        pass: "aivd qmxd hhmf xdjv",
+    },
 });
 const sendUserNotification = (UserId, email) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const admin = yield prisma.admin.findFirst({ select: { email: true } });
         if (!admin || !admin.email) {
-            throw new Error('Admin email not found');
+            throw new Error("Admin email not found");
         }
         const adminEmail = admin.email;
         yield transporter.sendMail({
             from: '"Ecommerce-App" <mailer1499@gmail.com>',
             to: adminEmail,
-            subject: 'New User Registration',
+            subject: "New User Registration",
             text: `New user registration from ${UserId}`,
         });
         console.log(`Notification email sent to ${adminEmail} for approval`);
     }
     catch (error) {
-        console.error('Error sending email notification:', error);
+        console.error("Error sending email notification:", error);
     }
 });
 exports.sendUserNotification = sendUserNotification;
@@ -54,7 +54,7 @@ const sendRegistrationResponseNotification = (email, subject, message) => __awai
         console.log(`Email sent that request approved`);
     }
     catch (error) {
-        console.error('Error sending email notification:', error);
+        console.error("Error sending email notification:", error);
     }
 });
 exports.sendRegistrationResponseNotification = sendRegistrationResponseNotification;

@@ -19,7 +19,8 @@ const prisma = new client_1.PrismaClient();
 const validateUser = (0, express_async_handler_1.default)((req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     let token;
     let authHeader = req.headers.authorization || req.headers.Authorization;
-    if (!authHeader || (Array.isArray(authHeader) && !authHeader[0].startsWith("Bearer"))) {
+    if (!authHeader ||
+        (Array.isArray(authHeader) && !authHeader[0].startsWith("Bearer"))) {
         res.status(401).json({ message: "Unauthorized Token not provided" });
         return;
     }
@@ -29,13 +30,17 @@ const validateUser = (0, express_async_handler_1.default)((req, res, next) => __
     token = authHeader.split(" ")[1];
     jsonwebtoken_1.default.verify(token, process.env.Access_Token_Secret, (err, decoded) => __awaiter(void 0, void 0, void 0, function* () {
         if (err) {
-            return res.status(401).json({ message: "Unauthorized Invalid token" });
+            return res
+                .status(401)
+                .json({ message: "Unauthorized Invalid token" });
         }
         if (!decoded.user || !decoded.user.isUserToken) {
             return res.status(403).json({ message: "Invalid user token" });
         }
         try {
-            const user = yield prisma.user.findUnique({ where: { id: decoded.user.id } });
+            const user = yield prisma.user.findUnique({
+                where: { id: decoded.user.id },
+            });
             if (!user) {
                 return res.status(404).json({ message: "User not found" });
             }
@@ -45,7 +50,9 @@ const validateUser = (0, express_async_handler_1.default)((req, res, next) => __
         }
         catch (error) {
             console.error(error);
-            res.status(500).json({ message: "Internal Server Error", error: error.message });
+            res
+                .status(500)
+                .json({ message: "Internal Server Error", error: error.message });
         }
     }));
 }));
